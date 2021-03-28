@@ -5,6 +5,8 @@ const keep_alive = require('./alive.js');
 const axios = require('axios');
 const ytdl = require('ytdl-core');
 
+let songs_to_play = [];
+
 client.on('ready', () => {
   console.log('running /');
   /*async function getCommands(){
@@ -355,6 +357,12 @@ client.on('ready', () => {
   })
 });
 
+function play_next() {
+  let first = songs_to_play.shift();
+  if (songs_to_play.length == 0) {
+    voiceChannel.leave();
+  }
+}
 
 client.on(`message`, msg => {
   if (msg.author.id != client.user.id) {
@@ -377,12 +385,16 @@ client.on(`message`, msg => {
       if (!voiceChannel) {
         return msg.reply('please join a voice channel first!');
       }
-
+      
+      const stream = ytdl(removelaunchyCall, { filter: 'audioonly' });
+      
+      let newLength = songs_to_play.push(stream);
+      
       voiceChannel.join().then(connection => {
-        const stream = ytdl(removelaunchyCall, { filter: 'audioonly' });
-        const dispatcher = connection.play(stream);
+        const dispatcher = connection.play(songs_to_play[0]);
 
-        dispatcher.on('finish', () => voiceChannel.leave());
+        dispatcher.on('finish', () => play_next());
+        
       });
     }
   }
