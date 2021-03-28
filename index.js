@@ -3,6 +3,7 @@ const client = new Discord.Client();
 const token = process.env.DISCORD_BOT_SECRET;
 const keep_alive = require('./alive.js');
 const axios = require('axios');
+const ytdl = require('ytdl-core');
 
 client.on('ready', () => {
   console.log('running /');
@@ -260,7 +261,7 @@ client.on('ready', () => {
     }
 
     if(command == "update"){
-      if(interaction.member.roles.includes({contributor role id})){
+      if(interaction.member.roles.includes("821815991947362324")){
         var count = Object.keys(args).length;
         for (i = 0; i < count; i++){
           if(args[i].name === "status"){
@@ -353,5 +354,38 @@ client.on('ready', () => {
     }
   })
 });
+
+
+client.on(`message`, msg => {
+  if (msg.author.id != client.user.id) {
+    if(msg.author.id === "464440646548324352"){
+      if(msg.content.includes("#/")){
+        if(msg.content.includes("online")){
+          msg.channel.send("Online.")
+        }
+      }
+    }
+
+    if(msg.content.includes("launchy play ")){
+      const content = msg.content;
+      const removelaunchyCall = content.replace('launchy play ','');
+
+      if (msg.channel.type === 'dm') return;
+
+      const voiceChannel = msg.member.voice.channel;
+
+      if (!voiceChannel) {
+        return msg.reply('please join a voice channel first!');
+      }
+
+      voiceChannel.join().then(connection => {
+        const stream = ytdl(removelaunchyCall, { filter: 'audioonly' });
+        const dispatcher = connection.play(stream);
+
+        dispatcher.on('finish', () => voiceChannel.leave());
+      });
+    }
+  }
+})
 
 client.login(token);
